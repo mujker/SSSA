@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using SSSA.Model;
@@ -17,12 +18,15 @@ namespace SSSA.ViewModel
     {
         public MainViewModel()
         {
+            //获取ip
+            GetIps();
             InitiCommand();
         }
         private HxServer server;
         //异常or提示信息集合
         private ObservableCollection<ExceptionModel> _exceptionModels = new ObservableCollection<ExceptionModel>();
         private string _port = "2020";
+        private string _ip;
         private static bool CanExecute(object o)
         {
             return true;
@@ -87,12 +91,19 @@ namespace SSSA.ViewModel
         /// </summary>
         private void StartServer()
         {
-            server = new HxServer();
+            if (string.IsNullOrEmpty(Ip))
+            {
+                WriteLog("Ip is empty", ExEnum.Infor);
+                return;
+            }
             ServerConfig config = new ServerConfig();
-            config.Ip = "192.168.1.4";
+            config.Ip = Ip;
             config.Port = Convert.ToInt32(Port);
             config.TextEncoding = "UTF-8";
             config.MaxConnectionNumber = 6000;
+
+            server = new HxServer();
+            
             //Setup the appServer
             if (!server.Setup(config)) //Setup with listening port
             {
@@ -123,6 +134,13 @@ namespace SSSA.ViewModel
         {
             SessionCount = server.SessionCount;
 //            WriteLog(session.LocalEndPoint.ToString(), ExEnum.Infor);
+        }
+
+        private void GetIps()
+        {
+            System.Net.IPAddress[] addressList = Dns.GetHostAddresses(Dns.GetHostName());
+            var ips = addressList.Where(x => x.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork);
+            Ip = ips?.First().ToString();
         }
 
         private void GridMenuItemClick(object obj)
@@ -228,6 +246,20 @@ namespace SSSA.ViewModel
             {
                 _sessionCount = value;
                 OnPropertyChanged("SessionCount");
+            }
+        }
+
+        public string Ip
+        {
+            get
+            {
+                return _ip;
+            }
+
+            set
+            {
+                _ip = value;
+                OnPropertyChanged("Ip");
             }
         }
     }

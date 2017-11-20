@@ -132,6 +132,7 @@
                     <telerik:RadPaneGroup>
                         <telerik:RadPane Header="配置" CanUserClose="False">
                             <StackPanel Orientation="Vertical">
+                                <TextBox Text="{Binding Ip}"></TextBox>
                                 <TextBox Text="{Binding Port}"></TextBox>
                                 <TextBlock Text="{Binding SessionCount, StringFormat='连接数：{0}'}"></TextBlock>
                             </StackPanel>
